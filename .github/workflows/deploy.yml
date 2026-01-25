@@ -33,13 +33,23 @@ jobs:
       - name: Build
         run: npm run build
 
-      # Vite outputs to dist, CRA outputs to build
+      - name: Detect output folder
+        id: out
+        run: |
+          if [ -d "dist" ]; then
+            echo "dir=dist" >> $GITHUB_OUTPUT
+          elif [ -d "build" ]; then
+            echo "dir=build" >> $GITHUB_OUTPUT
+          else
+            echo "Neither dist/ nor build/ exists. Build likely failed or output dir differs."
+            ls -la
+            exit 1
+          fi
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: |
-            dist
-            build
+          path: ${{ steps.out.outputs.dir }}
 
   deploy:
     environment:
